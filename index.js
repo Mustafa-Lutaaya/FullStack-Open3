@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
+const cors = require('cors');
 const app = express();
 
 let persons = [
@@ -31,6 +32,7 @@ morgan.token('body', (req) => {
 
 const format = ':method :url :status :response-time ms - :body';
 
+app.use(cors());
 app.use(morgan('tiny'));
 app.use(express.json());
 
