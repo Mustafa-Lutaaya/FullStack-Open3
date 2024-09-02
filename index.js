@@ -1,4 +1,7 @@
-[
+const express = require('express');
+const app = express();
+
+const persons = [
     { 
       "id": "1",
       "name": "Arto Hellas", 
@@ -19,4 +22,13 @@
       "name": "Mary Poppendieck", 
       "number": "39-23-6423122"
     }
-]
+];
+
+app.get('/api/persons',(request, response) => {
+  response.json(persons);
+});
+
+const PORT = 3001;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

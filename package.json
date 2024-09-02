@@ -1,0 +1,30 @@
+{
+  "name": "phonebook_backend",
+  "version": "1.0.0",
+  "description": "Phone Book Back end",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mustafa-Lutaaya/FullStack-Open3.git"
+  },
+  "keywords": [
+    "phonebook"
+  ],
+  "author": "Mustafa-Lutaaya",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mustafa-Lutaaya/FullStack-Open3/issues"
+  },
+  "homepage": "https://github.com/Mustafa-Lutaaya/FullStack-Open3#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
