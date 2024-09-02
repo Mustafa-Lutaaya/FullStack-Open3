@@ -73,8 +73,8 @@ app.post('/api/persons', (request, response) => {
   const nameExists = persons.some(person => person.name === body.name);
 
   if (nameExists) {
-    return response.status(400).json({ error: 'Name must be unique' });
-  }
+    return response.status(400).json({ error: 'Name already exits! must be unique' });
+  } 
 
   const newPerson = {
     id: Math.floor(Math.random() * 1000000),
