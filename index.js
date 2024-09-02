@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const morgan = require('morgan');
 const cors = require('cors');
 const app = express();
@@ -35,8 +36,10 @@ const format = ':method :url :status :response-time ms - :body';
 app.use(cors());
 app.use(morgan('tiny'));
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'dist')));
 
 app.get('/api/persons',(request, response) => {
+  console.log('GET /api/persons');
   response.json(persons);
 });
 
@@ -95,6 +98,10 @@ app.post('/api/persons', (request, response) => {
   persons = persons.concat(newPerson);
 
   response.json(newPerson);
+});
+
+app.get('*', (request, respond) => {
+  respond.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 const PORT = 3001;
