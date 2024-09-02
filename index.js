@@ -94,7 +94,7 @@ app.post('/api/persons', (request, response) => {
     name: body.name,
     number: body.number
   };
-
+  
   persons = persons.concat(newPerson);
 
   response.json(newPerson);
@@ -104,7 +104,7 @@ app.get('*', (request, respond) => {
   respond.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
+}); 
