@@ -25,6 +25,12 @@ let persons = [
     }
 ];
 
+morgan.token('body', (req) => {
+  return req.method === 'POST' || req.method === 'PUT' ? JSON.stringify(req.body) : '';
+});
+
+const format = ':method :url :status :response-time ms - :body';
+
 app.use(morgan('tiny'));
 app.use(express.json());
 
@@ -79,7 +85,7 @@ app.post('/api/persons', (request, response) => {
   } 
 
   const newPerson = {
-    id: Math.floor(Math.random() * 1000000),
+    id: Math.floor(Math.random() * 1000000).toString(),
     name: body.name,
     number: body.number
   };
