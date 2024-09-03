@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const Person = require('./models/person');
+const errorHandler = require('./middlewares/errorHandler')
 
 const app = express();
 const url = 'mongodb+srv://Mustafa-Lutaaya:Satire6Digits@fullstackopencluster.zx926.mongodb.net/?retryWrites=true&w=majority&appName=FullStackOpenCluster'
@@ -33,10 +34,9 @@ app.get('/api/persons',(request, response) => {
   .then(persons => {
     response.json(persons);
   })
-  .cath(error => {
-    console.error('Error fetching persons:', error.message);
-    response.status(500).json({ error: 'Failed to fetch persons' });
-  });
+  .catch(error => {
+    next(error);
+  });    
 });
 
 app.get('/info', (request, response) => {
@@ -50,8 +50,7 @@ app.get('/info', (request, response) => {
       `);
   })
   .catch(error => {
-    console.error('Error counting persons:', error.message);
-    response.status(500).send({ error: 'Internal server error' });
+    next(error);
    });
 });
 
@@ -67,8 +66,7 @@ app.get('/api/persons/:id', (request, response) => {
   }
   })
   .catch(error => {
-    console.error('Error fetching person:', error.message);
-    response.status(500).json({ error: 'Internal server error' });
+    next(error);
   });
 });
 
@@ -85,8 +83,7 @@ app.delete('/api/persons/:id', (request, response) => {
     }
      })
      .catch(error => {
-      console.error('Error deleting person:', error.message);
-      response.status(500).json({ error: 'Failed to delete person'});
+      next(error);
       });
   });
 
@@ -108,9 +105,8 @@ app.post('/api/persons', (request, response) => {
     response.json(savedPerson);
   })
   .catch(error => {
-    console.error('Error saving person:', error.message);
-    response.status(500).json({ error: 'Internal server error' });
-    });
+  next(error);
+  });
 });
 
 
