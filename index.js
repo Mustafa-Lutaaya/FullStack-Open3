@@ -23,6 +23,7 @@ morgan.token('body', (req) => {
 
 const format = ':method :url :status :response-time ms - :body';
 
+app.use(errorHandler);
 app.use(cors());
 app.use(morgan('tiny'));
 app.use(express.json());
@@ -39,35 +40,29 @@ app.get('/api/persons',(request, response) => {
   });    
 });
 
-app.get('/info', (request, response) => {
-  const requestTime = new Date();
-  
+app.get('/info', (request, response, next) => {
   Person.countDocuments({})
   .then(count => {
-    response.send(`
+    const info = `
       <p>Phonebook has info for ${count} people </p>
-      <p>${requestTime}</p>
-      `);
+      <p>${new Date}</p>
+      `;
+      response.send(info);
   })
-  .catch(error => {
-    next(error);
-   });
+  .catch(error => 
+    next(error));
 });
 
-app.get('/api/persons/:id', (request, response) => {
-  const id = request.params.id;
-
-  Person.findById(id)
+app.get('/api/persons/:id', (request, response, next) => {
+  Person.findById(request.params.id)
   .then(person => {
     if (person) {
     response.json(person);
   } else { 
-    response.status(404).send({ error: 'Person not found' });
+    response.status(404).end();
   }
   })
-  .catch(error => {
-    next(error);
-  });
+  .catch(error => next(error));
 });
 
 
