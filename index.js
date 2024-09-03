@@ -3,16 +3,17 @@ const path = require('path');
 const morgan = require('morgan');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const Person = required('./models/person');
-const app = express();
+const Person = require('./models/person');
 
+const app = express();
 const url = 'mongodb+srv://Mustafa-Lutaaya:Satire6Digits@fullstackopencluster.zx926.mongodb.net/?retryWrites=true&w=majority&appName=FullStackOpenCluster'
 
 mongoose.connect(url)
-.then(() => console.log('Connected to MongoDB'))
+.then(() => { 
+  console.log('Connected to MongoDB');
+})
 .catch((error) => {
   console.error('Error connceting to MongoDB:', error.message);
-  process.exit(1);
 });
 
 morgan.token('body', (req) => {
@@ -27,25 +28,36 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dist')));
 
 app.get('/api/persons',(request, response) => {
+  console.log('GET /api/persons');
   Person.find([])
-  .then(persons => response.json(persons))
-  .cath(error => response.status(500).json({ error: 'Failed to fetch persons' }));
+  .then(persons => {
+    response.json(persons);
+  })
+  .cath(error => {
+    console.error('Error fetching persons:', error.message);
+    response.status(500).json({ error: 'Failed to fetch persons' });
+  });
 });
 
 app.get('/info', (request, response) => {
+  const requestTime = new Date();
+  
   Person.countDocuments({})
   .then(count => {
-    const requestTime = new Date();
     response.send(`
-      <p>Phonebook has info for ${numberofRecords} people </p>
+      <p>Phonebook has info for ${count} people </p>
       <p>${requestTime}</p>
       `);
   })
-  .catch(error => response.status(500).json({ error: 'Failed to count documents' }));
+  .catch(error => {
+    console.error('Error counting persons:', error.message);
+    response.status(500).send({ error: 'Internal server error' });
+   });
 });
 
 app.get('/api/persons/:id', (request, response) => {
   const id = request.params.id;
+
   Person.findById(id)
   .then(person => {
     if (person) {
@@ -54,19 +66,16 @@ app.get('/api/persons/:id', (request, response) => {
     response.status(404).send({ error: 'Person not found' });
   }
   })
-  .catch(error => response.status(500).json({ error: 'Failed to fetch person' }));
+  .catch(error => {
+    console.error('Error fetching person:', error.message);
+    response.status(500).json({ error: 'Internal server error' });
   });
-
-  if (person) {
-    response.json(person);
-  } else {
-    response.status(404).send({ error: 'Person not found' });
-  }
-
+});
 
 
 app.delete('/api/persons/:id', (request, response) => {
   const id = request.params.id;
+
   Person.findByIdAndDelete(id)
   .then(result => {
     if (result) {
@@ -75,9 +84,11 @@ app.delete('/api/persons/:id', (request, response) => {
       response.status(404).send({ error: 'Person not found' });
     }
      })
-     .catch(error => response.status(500).json({ error: 'Failed to delete person'}));
+     .catch(error => {
+      console.error('Error deleting persons:', error.message);
+      response.status(500).json({ error: 'Failed to delete person'});
+      });
   });
-
 
 
 app.post('/api/persons', (request, response) => {
@@ -87,23 +98,23 @@ app.post('/api/persons', (request, response) => {
     return response.status(400).json({ error: 'Name or number is missing' });
   }
 
-  Person.findOne({ name: body.name })
-  .then(exisitingPerson => {
-    if (exisitingPerson) {
-      return response.status(400).json({ error: 'Name already exits! must be unique' });
-    }
-
-    const person = new Person({
-      name: body.name,
-      number: body.number
+  const person = new Person({
+    name: body.name,
+    number: body.number
   });
-  return person.save();
-})
-.then(savedPerson => response.json(savedPerson))
-.catch(error => response.status(500).json({ error: 'Failed to save person' }));
+  
+  person.save()
+  .then(savedPerson => {
+    response.json(savedPerson);
+  })
+  .catch(error => {
+    console.error('Error saving person:', error.message);
+    response.status(500).json({ error: 'Internal server error' });
+    });
 });
 
-app.get('*', (request, respond) => {
+
+app.get('*', (request, response) => {
   respond.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
