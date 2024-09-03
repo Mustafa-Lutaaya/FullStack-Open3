@@ -6,6 +6,8 @@ const mongoose = require('mongoose');
 const Person = require('./models/person');
 const errorHandler = require('./middlewares/errorHandler')
 
+const personsRouter = express.Router();
+
 const app = express();
 const url = 'mongodb+srv://Mustafa-Lutaaya:Satire6Digits@fullstackopencluster.zx926.mongodb.net/?retryWrites=true&w=majority&appName=FullStackOpenCluster'
 
@@ -23,14 +25,14 @@ morgan.token('body', (req) => {
 
 const format = ':method :url :status :response-time ms - :body';
 
-app.use(errorHandler);
 app.use(cors());
 app.use(morgan('tiny'));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dist')));
 
-app.get('/api/persons',(request, response) => {
-  console.log('GET /api/persons');
+app.use('/api/persons', personsRouter);
+
+personsRouter.get('/',(request, response) => {
   Person.find([])
   .then(persons => {
     response.json(persons);
@@ -53,7 +55,7 @@ app.get('/info', (request, response, next) => {
     next(error));
 });
 
-app.get('/api/persons/:id', (request, response, next) => {
+personsRouter.get('/:id', (request, response, next) => {
   Person.findById(request.params.id)
   .then(person => {
     if (person) {
@@ -66,7 +68,7 @@ app.get('/api/persons/:id', (request, response, next) => {
 });
 
 
-app.delete('/api/persons/:id', (request, response) => {
+personsRouter.delete('/:id', (request, response) => {
   const id = request.params.id;
 
   Person.findByIdAndDelete(id)
@@ -82,7 +84,7 @@ app.delete('/api/persons/:id', (request, response) => {
       });
   });
 
-app.put('/api/persons/:id', (request, response, next) => {
+personsRouter.put('/:id', (request, response, next) => {
   const { id } = request.params;
   const { name, number } = request.body;
 
@@ -102,7 +104,7 @@ app.put('/api/persons/:id', (request, response, next) => {
   .catch(error => next(error));
 });
 
-app.post('/api/persons', (request, response) => {
+personsRouter.post('/', (request, response) => {
   const body= request.body
 
   if (!body.name || !body.number) {
@@ -127,6 +129,8 @@ app.post('/api/persons', (request, response) => {
 app.get('*', (request, response) => {
   respond.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
