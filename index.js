@@ -87,6 +87,25 @@ app.delete('/api/persons/:id', (request, response) => {
       });
   });
 
+app.put('/api/persons/:id', (request, response, next) => {
+  const { id } = request.params;
+  const { name, number } = request.body;
+
+  const updatedPerson = {
+    name,
+    number,
+  };
+
+  Person.findByIdAndUpdate(id, updatedPerson, { new: true, runValidators: true, context: 'query' })
+  .then(updatedPerson => {
+    if (updatedPerson) {
+      response.json(updatedPerson);
+    } else {
+      response.status(404).send({ error: 'Person not found' });
+    }
+  })
+  .catch(error => next(error));
+});
 
 app.post('/api/persons', (request, response) => {
   const body= request.body
