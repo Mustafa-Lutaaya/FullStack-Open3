@@ -85,7 +85,7 @@ app.delete('/api/persons/:id', (request, response) => {
     }
      })
      .catch(error => {
-      console.error('Error deleting persons:', error.message);
+      console.error('Error deleting person:', error.message);
       response.status(500).json({ error: 'Failed to delete person'});
       });
   });
