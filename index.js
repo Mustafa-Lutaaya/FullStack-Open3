@@ -2,30 +2,18 @@ const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const Person = required('./models/person');
 const app = express();
 
-let persons = [
-    { 
-      "id": "1",
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": "2",
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": "3",
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": "4",
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-];
+const url = 'mongodb+srv://Mustafa-Lutaaya:Satire6Digits@fullstackopencluster.zx926.mongodb.net/?retryWrites=true&w=majority&appName=FullStackOpenCluster'
+
+mongoose.connect(url)
+.then(() => console.log('Connected to MongoDB'))
+.catch((error) => {
+  console.error('Error connceting to MongoDB:', error.message);
+  process.exit(1);
+});
 
 morgan.token('body', (req) => {
   return req.method === 'POST' || req.method === 'PUT' ? JSON.stringify(req.body) : '';
@@ -39,65 +27,80 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dist')));
 
 app.get('/api/persons',(request, response) => {
-  console.log('GET /api/persons');
-  response.json(persons);
+  Person.find([])
+  .then(persons => response.json(persons))
+  .cath(error => response.status(500).json({ error: 'Failed to fetch persons' }));
 });
 
 app.get('/info', (request, response) => {
-  const numberofRecords = persons.length;
-  const requestTime = new Date();
-
-  response.send(`
-    <p>Phonebook has info for ${numberofRecords} people </p>
-    <p>${requestTime}</p>
-    `);
+  Person.countDocuments({})
+  .then(count => {
+    const requestTime = new Date();
+    response.send(`
+      <p>Phonebook has info for ${numberofRecords} people </p>
+      <p>${requestTime}</p>
+      `);
+  })
+  .catch(error => response.status(500).json({ error: 'Failed to count documents' }));
 });
 
 app.get('/api/persons/:id', (request, response) => {
   const id = request.params.id;
-  const person = persons.find(person => person.id === id);
+  Person.findById(id)
+  .then(person => {
+    if (person) {
+    response.json(person);
+  } else { 
+    response.status(404).send({ error: 'Person not found' });
+  }
+  })
+  .catch(error => response.status(500).json({ error: 'Failed to fetch person' }));
+  });
 
   if (person) {
     response.json(person);
   } else {
     response.status(404).send({ error: 'Person not found' });
   }
-});
+
+
 
 app.delete('/api/persons/:id', (request, response) => {
   const id = request.params.id;
-  const personExists = persons.some(person => person.id === id);
+  Person.findByIdAndDelete(id)
+  .then(result => {
+    if (result) {
+      response.status(204).end();
+    } else {
+      response.status(404).send({ error: 'Person not found' });
+    }
+     })
+     .catch(error => response.status(500).json({ error: 'Failed to delete person'}));
+  });
 
-  if (personExists) {
-    persons = persons.filter(person => person.id !== id);
-    response.status(204).end();
-  } else {
-    response.status(404).send({ error: 'Person not found' });
-  }
-});
+
 
 app.post('/api/persons', (request, response) => {
-  const body = request.body;
+  const body= request.body
 
   if (!body.name || !body.number) {
     return response.status(400).json({ error: 'Name or number is missing' });
   }
 
-  const nameExists = persons.some(person => person.name === body.name);
+  Person.findOne({ name: body.name })
+  .then(exisitingPerson => {
+    if (exisitingPerson) {
+      return response.status(400).json({ error: 'Name already exits! must be unique' });
+    }
 
-  if (nameExists) {
-    return response.status(400).json({ error: 'Name already exits! must be unique' });
-  } 
-
-  const newPerson = {
-    id: Math.floor(Math.random() * 1000000).toString(),
-    name: body.name,
-    number: body.number
-  };
-  
-  persons = persons.concat(newPerson);
-
-  response.json(newPerson);
+    const person = new Person({
+      name: body.name,
+      number: body.number
+  });
+  return person.save();
+})
+.then(savedPerson => response.json(savedPerson))
+.catch(error => response.status(500).json({ error: 'Failed to save person' }));
 });
 
 app.get('*', (request, respond) => {

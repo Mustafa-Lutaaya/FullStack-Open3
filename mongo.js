@@ -1,4 +1,5 @@
 const mongoose = require('mongoose'); 
+const Person = require('./models/person');
 
 const args = process.argv;
 
@@ -12,19 +13,23 @@ const url = 'mongodb+srv://Mustafa-Lutaaya:Satire6Digits@fullstackopencluster.zx
 
 mongoose.connect(url)
 .then(() => {
-    console.log('Connected to MongoDB')
+    console.log('Connected to MongoDB');
+    if (args.length === 3) {
+        listPeople();
+    } else if (args.length === 5) {
+        const name = args[3];
+        const number = args[4];
+        addPerson(name, number);
+    } else {
+        console.log('Please provide the correct arguments: node mongo.js <password');
+        process.exit(1);
+    }
 })
 .catch((error) => {
     console.error('Error connection to MongoDB:', error.message);
     process.exit(1);
 });
 
-const personSchema = new mongoose.Schema({
-    name: String,
-    number: String,
-});
-
-const Person = mongoose.model('Person', personSchema)
 
 const listPeople = () => {
     Person.find({})
@@ -48,16 +53,9 @@ const addPerson = (name, number) => {
     .then(() => {
         console.log(`added ${person.name} number ${person.number} to phonebook`);
         mongoose.connection.close();
+    })
+    .catch(error => {
+        console.error('Error adding person:', error.message);
+        mongoose.connection.close();
     });
 };
-
-if (args.length === 3) {
-    listPeople();
-} else if (args.length == 5) {
-    const name = args[3];
-    const number = args[4];
-    addPerson(name, number);
-} else {
-    console.log('Please provide the correct arguments: node mongo.js <password> [name] [number]');
-    process.exit(1);
-}
